@@ -40,7 +40,7 @@ def csvWriter(file_name, data):
     for data to be written to a new csv file
     Note: overwrites files of the same name
     """
-    with open(file_name + '.csv', 'w', newline ='') as csvFile:
+    with open(file_name + '.csv', 'w', newline ='', encoding='utf-8') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerows(data)
 
@@ -51,7 +51,11 @@ def csvWriter(file_name, data):
 option = 43464
 #Starting HTML url for week of December 29th 2018
 
-while option >= 39971:
+csv_game_data = [['Date','Position','Game','Game System','Maker','Game Type','Weekly Sales','Total Sales','Week #']]
+    #csv list to be written out into csv file with column headings
+    
+while option >= 38319:
+#Ending HTML url for week of November 27th 2004
 
     url = "http://www.vgchartz.com/weekly/" + str(option) + "/USA/"
     html = urlopen(url)
@@ -62,25 +66,29 @@ while option >= 39971:
     
     table = soup.find("table", {"class": "chart"})
     table_rows = table.find_all('tr')
-
     cell_count = 1
-    csv_game_data = [['Date','Position','Game','Game System','Maker','Game Type','Weekly Sales','Total Sales','Week #']]
-    #csv list to be written out into csv file with column headings
-
+    
     while cell_count <= 60:
-        td_data = table_rows[cell_count].find_all('td')
-        #Beautifulsoup Resultset element of all content in each table row
+        try:
+            td_data = table_rows[cell_count].find_all('td')
+            #Beautifulsoup Resultset element of all content in each table row
+            
+        except(IndexError):
+            print("Less than 30 game cells for week: " + date.text)
+            #If IndexError, then break out of table grabbing data for this week
+            #Some of the later data i.e. year 2004 only has data for less than 30 games
+            break
+                
         original_row = [i.text for i in td_data] 
         #Creates list with each element an element from td_data object
         
-        position = int(original_row[0])
-        weekly_sales = int(original_row[4].replace(',',''))
-        total_sales = int(original_row[5].replace(',',''))
-        week_number = int(original_row[6].replace(',',''))
-        #replace function used to cast strings to int without worry of comma's
+        position = original_row[0]
+        weekly_sales = original_row[4].replace(',','')
+        total_sales = original_row[5].replace(',','')
+        week_number = original_row[6].replace(',','')
         game_attributes = processGameName(original_row[3])
         #Function call to processGameName
-    
+            
         new_row = []
         new_row.append(date.text)
         new_row.append(position)
@@ -92,11 +100,11 @@ while option >= 39971:
         cell_count += 2
         #Each new game cell skips the next cell
         #30 games for 60 cells in total
-
-   
-    csvWriter(date.text, csv_game_data)
-    #Function call to csvWriter
+            
     print(date.text)
-    
+            
     option -= 7
     #Each HTML url decrements by 7 for a new week
+
+csvWriter("Game Sales Data_3", csv_game_data)
+#Function call to csvWriter
