@@ -64,7 +64,7 @@ while option >= 39971:
     table_rows = table.find_all('tr')
 
     cell_count = 1
-    csv_game_data = [[date.text],['Position','Game','Game System','Maker','Game Type','Weekly Sales','Total Sales','Week #']]
+    csv_game_data = [['Date','Position','Game','Game System','Maker','Game Type','Weekly Sales','Total Sales','Week #']]
     #csv list to be written out into csv file with column headings
 
     while cell_count <= 60:
@@ -82,6 +82,7 @@ while option >= 39971:
         #Function call to processGameName
     
         new_row = []
+        new_row.append(date.text)
         new_row.append(position)
         new_row.extend(game_attributes)
         new_row.append(weekly_sales)
@@ -97,5 +98,5 @@ while option >= 39971:
     #Function call to csvWriter
     print(date.text)
     
-    option -= 350
+    option -= 7
     #Each HTML url decrements by 7 for a new week
