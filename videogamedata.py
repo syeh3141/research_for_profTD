@@ -106,5 +106,5 @@ while option >= 38319:
     option -= 7
     #Each HTML url decrements by 7 for a new week
 
-csvWriter("Game Sales Data_3", csv_game_data)
+csvWriter("Game Sales Data", csv_game_data)
 #Function call to csvWriter
