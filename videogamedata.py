@@ -111,8 +111,7 @@ while option >= 43400:
         game_attributes = processGameName(original_row[3], td_data)
         if game_attributes[4]:
             #To create a new csv file to check correctness of correcting blanks
-            print("Blanks!")
-            print("Blanks!")
+            print("Blank!")
             blanks_row = []
             blanks_row.append(date.text)
             blanks_row.append(position)
