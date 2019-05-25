@@ -62,8 +62,7 @@ def csvWriter(file_name, data):
         writer = csv.writer(csvFile)
         writer.writerows(data)
 
-
-
+        
 #Script start
 #To run only one instance, comment out the while loop
 option = 43464
