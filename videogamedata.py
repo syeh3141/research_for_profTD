@@ -73,8 +73,7 @@ csv_game_data = [['Date','Position','Game','Game System','Maker','Game Type','We
 csv_blanks = [['Date','Game Name']]
 #csv list of blanked names that were revised    
     
-while option >= 43400:
-#38319:
+while option >= 38319:
 #Ending HTML url for week of November 27th 2004
     
 
