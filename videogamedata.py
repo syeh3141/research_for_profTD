@@ -7,10 +7,10 @@ Created on Sun May 19 18:35:41 2019
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-import csv
+import csv  
+    
 
-
-def processGameName(game):
+def processGameName(game, result_set):
     """This function takes in a string argument in the form
     'game name (game system)game maker, game type'
     Returns a list
@@ -20,6 +20,7 @@ def processGameName(game):
     4th element -> game type
     Preconditions: game must have at least 1 set of parenthese and 1 comma
     """
+    blank = False
     
     if game.count("(") == 0  or game.count(")") == 0 or game.count(",") == 0:
         #Checking preconditions
@@ -32,7 +33,24 @@ def processGameName(game):
     game_type = game[game.rfind(',') + 2:]
     #String splicing
     
-    return [name, system, maker, game_type]
+    if not name:
+        #if name is blank, get name from picture reference
+        reference_td = result_set[1]
+        picture_ref = reference_td.a['href']
+        raw_title = picture_ref[picture_ref.rfind('/') + 1:]
+        raw_title = raw_title.replace('-', ' ')
+        name = raw_title.title()
+        if name == "Walkthrough":
+            #if name is 'Walkthrough', get name from ssecond slash set
+            raw_title_nowalk = picture_ref[:picture_ref.rfind('/')]
+            raw_title_nowalk = raw_title_nowalk[raw_title_nowalk.rfind('/') + 1:]
+            raw_title_nowalk = raw_title_nowalk.replace('-', ' ')
+            name = raw_title_nowalk.title()
+        print(name)
+        blank = True
+    
+    
+    return [name, system, maker, game_type, blank]
 
 
 def csvWriter(file_name, data):
@@ -52,10 +70,14 @@ option = 43464
 #Starting HTML url for week of December 29th 2018
 
 csv_game_data = [['Date','Position','Game','Game System','Maker','Game Type','Weekly Sales','Total Sales','Week #']]
-    #csv list to be written out into csv file with column headings
+#csv list to be written out into csv file with column headings
+csv_blanks = [['Date','Game Name']]
+#csv list of blanked names that were revised    
     
-while option >= 38319:
+while option >= 43400:
+#38319:
 #Ending HTML url for week of November 27th 2004
+    
 
     url = "http://www.vgchartz.com/weekly/" + str(option) + "/USA/"
     html = urlopen(url)
@@ -86,13 +108,23 @@ while option >= 38319:
         weekly_sales = original_row[4].replace(',','')
         total_sales = original_row[5].replace(',','')
         week_number = original_row[6].replace(',','')
-        game_attributes = processGameName(original_row[3])
+        game_attributes = processGameName(original_row[3], td_data)
+        if game_attributes[4]:
+            #To create a new csv file to check correctness of correcting blanks
+            print("Blanks!")
+            print("Blanks!")
+            blanks_row = []
+            blanks_row.append(date.text)
+            blanks_row.append(position)
+            blanks_row.append(game_attributes[0])
+            csv_blanks.append(blanks_row)
+        
         #Function call to processGameName
             
         new_row = []
         new_row.append(date.text)
         new_row.append(position)
-        new_row.extend(game_attributes)
+        new_row.extend(game_attributes[:3])
         new_row.append(weekly_sales)
         new_row.append(total_sales)
         new_row.append(week_number)
@@ -107,4 +139,5 @@ while option >= 38319:
     #Each HTML url decrements by 7 for a new week
 
 csvWriter("Game Sales Data", csv_game_data)
+csvWriter("Blanks", csv_blanks)
 #Function call to csvWriter
