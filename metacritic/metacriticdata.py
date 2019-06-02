@@ -70,8 +70,6 @@ def lastPageNumber(year):
     else:
         return last_page.text[1:]
 
-
-
 csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Date']]
 #csv list to be written out into csv file with column headings
 
@@ -131,7 +129,4 @@ while year <= 2019:
         
     year += 1
             
-    
 csvWriter("Metacritic Data Trial Run 2016 to 2019", csv_game_data)
-
-
