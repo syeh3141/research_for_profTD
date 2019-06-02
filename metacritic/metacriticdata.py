@@ -129,4 +129,4 @@ while year <= 2019:
         
     year += 1
             
-csvWriter("Metacritic Data Trial Run 2016 to 2019", csv_game_data)
+csvWriter("Metacritic Data Aggregate", csv_game_data)
