@@ -49,10 +49,11 @@ def csvWriter(file_name, data):
         writer = csv.writer(csvFile)
         writer.writerows(data)
         
+        
 def lastPageNumber(year):
     """This function takes in an int year and returns the string form of the last 
     page number of that year's page of Metacritic
-    Returns "0" if no last page/ first page is the last page
+    Returns "0" if no last page
     Else returns last page
     """
     
@@ -69,64 +70,105 @@ def lastPageNumber(year):
         return last_page.text
     else:
         return last_page.text[1:]
+    
+    
+def numberOfUserRatings(game):
+    """This function takes in a game BeatifulSoup Tag (from the MetaCritic year
+    chart), goes to specific game's MetaCritic website and returns number of
+    user ratings in a string"""
+    
+    ending_url = game.a['href']
+    full_url = "https://www.metacritic.com" + ending_url
+    user_ratings_url_headers = urllib.request.Request(full_url, headers={'User-Agent' : "Magic Browser"})
+    html_user_ratings = urllib.request.urlopen(user_ratings_url_headers)
+    soup_user_ratings = BeautifulSoup(html_user_ratings, 'lxml')
+    #soup the website of the specific game on MetaCritic
+    
+    side_details = soup_user_ratings.find("div", {"class": "details side_details"})
+    count = side_details.find("span", {"class": "count"})
+    text = count.text
+    number_of_user_ratings = text[text.find('n')+2:text.rfind('R')-1]
+    #string splicing
+    
+    return number_of_user_ratings
+    
 
-csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Date']]
+csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Date', 'Number of User Ratings']]
 #csv list to be written out into csv file with column headings
 
-year = 1995
+year = 2010
 #starting year
 
-while year <= 2019:
+try:
+    while year <= 2019:
     #ending year
     
-    page = 0
-    last_page = lastPageNumber(year)
+        page = 0
+        last_page = lastPageNumber(year)
     
-    while (page < int(last_page)) or (page == 0 and int(last_page) == 0):
-        #Conditions: page less than last_page or on the only page for that year
-        print(page)
-        print(last_page)
+        while (page < int(last_page)) or (page == 0 and int(last_page) == 0):
+            print(page)
+            print(last_page)
     
-        url = "https://www.metacritic.com/browse/games/score/metascore/year/all/filtered?sort=desc&year_selected=" + str(year) +"&page=" + str(page)
-        url_headers = urllib.request.Request(url, headers={'User-Agent' : "Magic Browser"})
-        html = urllib.request.urlopen(url_headers)
-        soup = BeautifulSoup(html, 'lxml')
+            url = "https://www.metacritic.com/browse/games/score/metascore/year/all/filtered?sort=desc&year_selected=" + str(year) +"&page=" + str(page)
+            url_headers = urllib.request.Request(url, headers={'User-Agent' : "Magic Browser"})
+            html = urllib.request.urlopen(url_headers)
+            soup = BeautifulSoup(html, 'lxml')
         
-        only_product = soup.find("li", {"class": "product game_product first_product last_product"})
-        #extracts first, last and only game on the page
-        if only_product is not None:    
-            only_row = [year]
-            only_row.extend(processGameDetailsMetacritic(only_product.text))
-            csv_game_data.append(only_row)
-            break
+            only_product = soup.find("li", {"class": "product game_product first_product last_product"})
+            #first, last and only game on the page
+            if only_product is not None:    
+                only_row = [year]
+                only_row.extend(processGameDetailsMetacritic(only_product.text))
+                if only_row[4] != "tbd":
+                    only_row.append(numberOfUserRatings(only_product))
+                else:
+                    only_row.append(0)
+                csv_game_data.append(only_row)
+                break
             
-        first_product = soup.find("li", {"class": "product game_product first_product"})
-        #extracts first game on the page
-        if first_product is not None:
-            first_row = [year]
-            first_row.extend(processGameDetailsMetacritic(first_product.text))
-            csv_game_data.append(first_row)
+            first_product = soup.find("li", {"class": "product game_product first_product"})
+            #first game on the page
+            if first_product is not None:
+                first_row = [year]
+                first_row.extend(processGameDetailsMetacritic(first_product.text))
+                if first_row[4] != "tbd":
+                    first_row.append(numberOfUserRatings(first_product))
+                else:
+                    first_row.append(0)
+                csv_game_data.append(first_row)
             
-        all_products = soup.find_all("li", {"class": "product game_product"})
-        #extracts all games on the page besides the first and last
-        if all_products is not None:
-            for product in all_products:
-                new_row = [year]
-                new_row.extend(processGameDetailsMetacritic(product.text))
-                csv_game_data.append(new_row)
+            all_products = soup.find_all("li", {"class": "product game_product"})
+            #all games on the page besides the first and last
+            if all_products is not None:
+                for product in all_products:
+                    new_row = [year]
+                    new_row.extend(processGameDetailsMetacritic(product.text))
+                    if new_row[4] != "tbd":
+                        new_row.append(numberOfUserRatings(product))
+                    else:
+                        new_row.append(0)
+                    csv_game_data.append(new_row)
             
-        last_product = soup.find("li", {"class": "product game_product last_product"})
-        #extracts last game on the page
-        if last_product is not None:
-            last_row = [year]
-            last_row.extend(processGameDetailsMetacritic(last_product.text))
-            csv_game_data.append(last_row)
+            last_product = soup.find("li", {"class": "product game_product last_product"})
+            #last game on the page
+            if last_product is not None:
+                last_row = [year]
+                last_row.extend(processGameDetailsMetacritic(last_product.text))
+                if last_row[4] != "tbd":
+                    last_row.append(numberOfUserRatings(last_product))
+                else:
+                    last_row.append(0)
+                csv_game_data.append(last_row)
                    
-        if int(last_page) == 0:
-            print("Only one page!")
-        page += 1
-        print(page)
+            if int(last_page) == 0:
+                print("Only one page!")
+            page += 1
+            print(page)
         
-    year += 1
+        year += 1
             
-csvWriter("Metacritic Data Aggregate", csv_game_data)
+        csvWriter("Metacritic Data Trial Run with User Ratings 2010 onward", csv_game_data)
+        
+except:
+    csvWriter("Metacritic Data Trial Run with User Ratings 2010 onward", csv_game_data)
