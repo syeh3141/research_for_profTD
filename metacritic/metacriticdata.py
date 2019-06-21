@@ -9,6 +9,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 import csv  
 
+
 def processGameDetailsMetacritic(game):
     """This function takes in a string argument in the form
     'game name (game platform)metascoreUser:user_scoreRelease Date:release_date'
@@ -18,7 +19,7 @@ def processGameDetailsMetacritic(game):
     3rd element -> game platform
     4th element -> game user_score
     5th element -> game release_date
-    Preconditions: game must have at least 1 set of parenthese and 1 colon
+    Preconditions: game must have at least 1 set of parentheses and 1 colon
     """
     
     if game.count("(") == 0  or game.count(")") == 0 or game.count(":") == 0:
@@ -33,7 +34,7 @@ def processGameDetailsMetacritic(game):
     game_notitleplatform = game[game.rfind(')') + 1 :].strip()
     user_score = game_notitleplatform[game_notitleplatform.find(':') + 1: game_notitleplatform.find(':') + 4]
     release_date = game_notitleplatform[game_notitleplatform.rfind(':') + 1:]
-    #String splicing
+    #String splicing to obtain specific data
     
     print([name, platform, metascore, user_score, release_date])
     
@@ -79,24 +80,38 @@ def numberOfUserRatings(game):
     
     ending_url = game.a['href']
     full_url = "https://www.metacritic.com" + ending_url
-    user_ratings_url_headers = urllib.request.Request(full_url, headers={'User-Agent' : "Magic Browser"})
-    html_user_ratings = urllib.request.urlopen(user_ratings_url_headers)
-    soup_user_ratings = BeautifulSoup(html_user_ratings, 'lxml')
-    #soup the website of the specific game on MetaCritic
+    try:
+        for i in range(0,10):
+            try:
+                user_ratings_url_headers = urllib.request.Request(full_url, headers={'User-Agent' : "Magic Browser"})
+                html_user_ratings = urllib.request.urlopen(user_ratings_url_headers)
+                soup_user_ratings = BeautifulSoup(html_user_ratings, 'lxml')
+            except:
+                httpErrorGames.append(ending_url)
+                continue
+            break
+        #Try for server failures
+        #soup the website of the specific game on MetaCritic
     
-    side_details = soup_user_ratings.find("div", {"class": "details side_details"})
-    count = side_details.find("span", {"class": "count"})
-    text = count.text
-    number_of_user_ratings = text[text.find('n')+2:text.rfind('R')-1]
-    #string splicing
+        side_details = soup_user_ratings.find("div", {"class": "details side_details"})
+        count = side_details.find("span", {"class": "count"})
+        text = count.text
+        number_of_user_ratings = text[text.find('n')+2:text.rfind('R')-1]
+        #string splicing
     
-    return number_of_user_ratings
+        return number_of_user_ratings
     
+    except:
+        return "SERVER FAIL"
+
+
+httpErrorGames = []
+httpErrorPages = []
 
 csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Date', 'Number of User Ratings']]
 #csv list to be written out into csv file with column headings
 
-year = 2010
+year = 1995
 #starting year
 
 try:
@@ -109,11 +124,20 @@ try:
         while (page < int(last_page)) or (page == 0 and int(last_page) == 0):
             print(page)
             print(last_page)
-    
-            url = "https://www.metacritic.com/browse/games/score/metascore/year/all/filtered?sort=desc&year_selected=" + str(year) +"&page=" + str(page)
-            url_headers = urllib.request.Request(url, headers={'User-Agent' : "Magic Browser"})
-            html = urllib.request.urlopen(url_headers)
-            soup = BeautifulSoup(html, 'lxml')
+            
+            for i in range(0,10):
+                
+                try:
+                    url = "https://www.metacritic.com/browse/games/score/metascore/year/all/filtered?sort=desc&year_selected=" + str(year) +"&page=" + str(page)
+                    url_headers = urllib.request.Request(url, headers={'User-Agent' : "Magic Browser"})
+                    html = urllib.request.urlopen(url_headers)
+                    soup = BeautifulSoup(html, 'lxml')
+                except:
+                    httpErrorPages.append(year)
+                    httpErrorPages.append(page)
+                    continue
+                break
+                #Try for server failures
         
             only_product = soup.find("li", {"class": "product game_product first_product last_product"})
             #first, last and only game on the page
@@ -168,7 +192,10 @@ try:
         
         year += 1
             
-        csvWriter("Metacritic Data Trial Run with User Ratings 2010 onward", csv_game_data)
+    csvWriter("Metacritic Data Trial Run with User Ratings", csv_game_data)
         
 except:
-    csvWriter("Metacritic Data Trial Run with User Ratings 2010 onward", csv_game_data)
+    csvWriter("Metacritic Data Trial Run with User Ratings", csv_game_data)
+    
+print(httpErrorGames)
+print(httpErrorPages)
