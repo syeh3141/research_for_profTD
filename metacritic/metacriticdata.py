@@ -90,7 +90,7 @@ def numberOfReviews(game):
 
     for i in range(0,10):
         if i == 9:
-            return "SERVER FAIL"
+            return ["SERVER FAIL"]
         try:
             ratings_url_headers = urllib.request.Request(full_url, headers={'User-Agent' : "Magic Browser"})
             html_ratings = urllib.request.urlopen(ratings_url_headers)
@@ -181,7 +181,7 @@ csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Dat
 year = 2001
 #starting year
 
-while year <= 2004:
+while year <= 2003:
 #ending year
     
     page = 0
@@ -251,7 +251,7 @@ while year <= 2004:
         
     year += 1
             
-csvWriter("Metacritic Data with Reviews 2001 to 2004", csv_game_data)
+csvWriter("Metacritic Data with Reviews 2001 to 2003", csv_game_data)
     
 print(httpErrorGames)
 print(httpErrorPages)
