@@ -22,4 +22,4 @@ Three defined functions
 processGameDetailsMetacritic: string processing for splitting up game name, platform, metascore, user score, release date
 csvWriter: writing the data to a csv file with file name and data as arguments
 lastPageNumber: returns the number of the last page of a given year
-numberOfReviews: returns list of numbers that include the number of positive, mixed and negative reviews of both users and critics
+numberOfReviews: returns list that includes the number of positive, mixed and negative reviews of both users and critics
