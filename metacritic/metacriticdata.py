@@ -178,13 +178,13 @@ csv_game_data = [['Year','Game','Platform','Metascore','User Score','Release Dat
                   'Mixed User Reviews', 'Negative User Reviews']]
 #csv list to be written out into csv file with column headings
 
-year = 2001
+year = 1995
 #starting year
 
-while year <= 2003:
+while year <= 2019:
 #ending year
     
-    page = 0
+    page = 6
     last_page = lastPageNumber(year)
     
     while (page < int(last_page)) or (page == 0 and int(last_page) == 0):
@@ -251,7 +251,7 @@ while year <= 2003:
         
     year += 1
             
-csvWriter("Metacritic Data with Reviews 2001 to 2003", csv_game_data)
+csvWriter("Metacritic Data with Reviews", csv_game_data)
     
 print(httpErrorGames)
 print(httpErrorPages)
