@@ -1,7 +1,8 @@
 # metacriticdata.py
 
 Script for extracting data user and metascore ratings of
-games from 1995-2019
+games from 1995-2019 and rating score distributions
+(positive, mixed and negative)
 
 ## Packages needed
 
@@ -18,7 +19,7 @@ Suggested: loop over smaller time periods
 
 ## Functions
 
-Three defined functions
+Four defined functions
 processGameDetailsMetacritic: string processing for splitting up game name, platform, metascore, user score, release date
 csvWriter: writing the data to a csv file with file name and data as arguments
 lastPageNumber: returns the number of the last page of a given year
