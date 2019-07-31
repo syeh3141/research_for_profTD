@@ -40,8 +40,8 @@ def seriesListDictMaker(prefix, region_codes, item_codes):
     return series_list, series_dict
     
         
-def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, areas, file_name):
-    """This function takes in 7 arguments: the starting year, ending year (both in string format)
+def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, areas, file_name, regis_key):
+    """This function takes in 8 parameters: the starting year, ending year (both in string format)
     seriesid_list -> list of series IDs
     seriesid_dict -> Python dictionary mapping each series ID to list of two elements
     first element is the region code (four digit #) second element is the item suffix
@@ -52,18 +52,18 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
     Note: seriesid_list listed item code then area code as such:   
     CUUR0100SAR  CUUR0200SAR  CUUR0100SARC  CUUR0200SARC
     NOT CUUR0100SAR  CUUR0100SARC  CUUR0200SAR  CUUR0200SARC
+    regis_key -> API V 2.0 Registration Key
     """
     csv_cu_data = [['Year','Month','Region']]
-    
     
     for i in range(0,len(seriesid_list)):
         year = int(end_year)
         while year >= int(start_year):
-            startyear = year - 9
+            startyear = year - 19
             if startyear < int(start_year):
                 startyear = start_year
             headers = {'Content-type': 'application/json'}  
-            data = json.dumps({"seriesid": [seriesid_list[i]],"startyear":str(startyear), "endyear":str(year)})
+            data = json.dumps({"seriesid": [seriesid_list[i]],"startyear":str(startyear), "endyear":str(year), "registrationkey": regis_key})
             p = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
             json_data = json.loads(p.text)
             series = json_data['Results']['series'][0]
@@ -88,7 +88,6 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                 if series_item == item:
                     new_column = False
                     break
-        
             if new_column and seriesID == seriesid_list[0]:
                 print(1)
                 #first series and creating a new column
@@ -99,7 +98,6 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                     period = item['period']
                     if 'M01' <= period <= 'M12':
                         csv_cu_data.append(row)
-        
             elif new_column:
                 #other series that create a new column aka have a unique item column
                 csv_cu_data[0].append(series_item)
@@ -110,7 +108,6 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                         #check for the right year, month and area row
                         csv_cu_data[row_count].append(item['value'])
                     row_count += 1
-        
             elif not new_column and series_item == csv_cu_data[0][3]:
                 print(3)
                     #check for right column
@@ -120,7 +117,6 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                     period = item['period']
                     if 'M01' <= period <= 'M12':
                         csv_cu_data.append(row)
-            
             else:
                 print(4)
                 if series_item == csv_cu_data[0][len(csv_cu_data[index_row_no_col-1])-1]:
@@ -137,7 +133,7 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                     raise NameError('Check for right column!')
             
         
-            year -= 10
+            year -= 20
        
     csvWriter(file_name, csv_cu_data)
         
@@ -158,18 +154,17 @@ cu_oldseries_items = {"SA6":"Entertainment","SA61":"Entertainment commodities",
 
 csv_cu_data = [['Year','Month']]
 
-#Creating series ID tupel of list and dictionary
-region_current_series_SAR = seriesListDictMaker("CUUR", current_region_codes, cu_series_SAR)
-region_current_series_other = seriesListDictMaker("CUUR", current_region_codes, cu_currentseries_otheritems)
-division_current_series = seriesListDictMaker("CUUR", division_codes, cu_series_SAR)
-region_old_series = seriesListDictMaker("MUUR", old_region_codes, cu_oldseries_items)
+#Creating series ID tuple of list and dictionary
+region_SAR_list,  region_SAR_dict = seriesListDictMaker("CUUR", current_region_codes, cu_series_SAR)
+region_other_list, region_other_dict = seriesListDictMaker("CUUR", current_region_codes, cu_currentseries_otheritems)
+division_series_list, division_series_dict = seriesListDictMaker("CUUR", division_codes, cu_series_SAR)
+region_old_series_list, region_old_series_dict = seriesListDictMaker("MUUR", old_region_codes, cu_oldseries_items)
 
-
+#Assign registration key to regis_key
+#INPUT NEEDED
+regis_key = ""
         
-#blsDataPrice("1997", "2019", region_current_series_SAR[0], region_current_series_SAR[1], cu_series_SAR, current_region_codes,"Region Current SAR PriceLevel")
-#blsDataPrice("2009", "2019", region_current_series_other[0], region_current_series_other[1], cu_currentseries_otheritems, current_region_codes,"Region Current OtherRecreation PriceLevel")
-#blsDataPrice("2017", "2019", division_current_series[0], division_current_series[1], cu_series_SAR, division_codes,"Division Current PriceLevel")
-blsDataPrice("1977", "1997", region_old_series[0], region_old_series[1], cu_oldseries_items, old_region_codes,"Region Old PriceLevel")
-
-
-
+blsDataPrice("1997", "2019", region_SAR_list, region_SAR_dict, cu_series_SAR, current_region_codes,"Region Current SAR PriceLevel", regis_key)
+blsDataPrice("2009", "2019", region_other_list, region_other_dict, cu_currentseries_otheritems, current_region_codes,"Region Current OtherRecreation PriceLevel", regis_key)
+blsDataPrice("2017", "2019", division_series_list, division_series_dict, cu_series_SAR, division_codes,"Division Current PriceLevel", regis_key)
+#blsDataPrice("1977", "1997", region_old_series_list, region_old_series_dict, cu_oldseries_items, old_region_codes,"Region Old PriceLevel", regis_key)
