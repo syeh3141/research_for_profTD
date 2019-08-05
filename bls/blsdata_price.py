@@ -9,7 +9,6 @@ import requests
 import json
 import csv 
 
-
 def csvWriter(file_name, data):
     """This function takes in a string argument for file name and list data
     for data to be written to a new csv file
@@ -99,6 +98,7 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                     if 'M01' <= period <= 'M12':
                         csv_cu_data.append(row)
             elif new_column:
+                print(2)
                 #other series that create a new column aka have a unique item column
                 csv_cu_data[0].append(series_item)
                 row_count = 1
@@ -132,33 +132,31 @@ def blsDataPrice(start_year, end_year, seriesid_list, seriesid_dict, items, area
                     print(seriesID + " Column mismatch error")
                     raise NameError('Check for right column!')
             
-        
             year -= 20
        
     csvWriter(file_name, csv_cu_data)
         
                 
-     
 current_region_codes = {'0100':"Northeast",'0200':"Midwest",'0300':"South",'0400':"West"}
-cu_series_SAR = {"SAR":"Recreation"}
-cu_currentseries_otheritems = {"SARC": "Recreation commodities", "SARS": "Recreation services"}
-
 division_codes = {'0110':"New England", "0120": "Middle Atlantic","0230":"East North Central",
                   "0240":"West North Central","0350":"South Atlantic","0360":"East South Central",
                   "0370":"West South Central","0480":"Mountain", "0490":"Pacific"}
 #Division code series ID use only the SAR item suffix
-old_region_codes = {'0100':"Northeast Region",'0200':"North Central Region",'0300':"Southern Region",'0400':"Western Region"}
+old_region_codes = {'0100':"Northeast Region",'0200':"North Central Region",'0300':"Southern Region",
+                    '0400':"Western Region"}
+
+cu_series_SAR = {"SAR":"Recreation"}
+cu_series_all = {"SA0":"All Items"}
+cu_currentseries_otheritems = {"SARC": "Recreation commodities", "SARS": "Recreation services"}
 cu_oldseries_items = {"SA6":"Entertainment","SA61":"Entertainment commodities",
                       "SE62":"Entertainment services"}
-
-
-csv_cu_data = [['Year','Month']]
 
 #Creating series ID tuple of list and dictionary
 region_SAR_list,  region_SAR_dict = seriesListDictMaker("CUUR", current_region_codes, cu_series_SAR)
 region_other_list, region_other_dict = seriesListDictMaker("CUUR", current_region_codes, cu_currentseries_otheritems)
-division_series_list, division_series_dict = seriesListDictMaker("CUUR", division_codes, cu_series_SAR)
-region_old_series_list, region_old_series_dict = seriesListDictMaker("MUUR", old_region_codes, cu_oldseries_items)
+region_all_list, region_all_dict = seriesListDictMaker("CUUR", current_region_codes, cu_series_all)
+division_list, division_dict = seriesListDictMaker("CUUR", division_codes, cu_series_SAR)
+region_old_list, region_old_dict = seriesListDictMaker("MUUR", old_region_codes, cu_oldseries_items)
 
 #Assign registration key to regis_key
 #INPUT NEEDED
@@ -166,5 +164,6 @@ regis_key = ""
         
 blsDataPrice("1997", "2019", region_SAR_list, region_SAR_dict, cu_series_SAR, current_region_codes,"Region Current SAR PriceLevel", regis_key)
 blsDataPrice("2009", "2019", region_other_list, region_other_dict, cu_currentseries_otheritems, current_region_codes,"Region Current OtherRecreation PriceLevel", regis_key)
-blsDataPrice("2017", "2019", division_series_list, division_series_dict, cu_series_SAR, division_codes,"Division Current PriceLevel", regis_key)
+blsDataPrice("2017", "2019", division_list, division_dict, cu_series_SAR, division_codes,"Division Current PriceLevel", regis_key)
+blsDataPrice("1966", "2019", region_all_list, region_all_dict, cu_series_all, current_region_codes,"Region Current All Items PriceLevel", regis_key)
 #blsDataPrice("1977", "1997", region_old_series_list, region_old_series_dict, cu_oldseries_items, old_region_codes,"Region Old PriceLevel", regis_key)
